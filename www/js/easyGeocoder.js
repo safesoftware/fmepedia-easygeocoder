@@ -1,12 +1,7 @@
 $(document).ready(function() {
-   // $.getJSON("http://demos.fmeserver.com.s3.amazonaws.com/server-demo-config.json", function(config) {
-     //   initialize(config.initObject);
-   //});
-    var initObject = { server: "http://nh-linux-core", token : "93172e26b64757b745685bdbc9a35054502a8f16"};
-
-    initialize(initObject);
-
-});
+    $.getJSON("http://demos.fmeserver.com.s3.amazonaws.com/server-demo-config.json", function(config) {
+        initialize(config.initObject);
+   });
 
 function initialize(initObject) {
     document.getElementById('dropdowns').style.display = 'none';
