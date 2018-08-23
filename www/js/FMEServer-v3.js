@@ -1,6 +1,6 @@
 /*****************************************************************************
  * FMEServer.js
- * 2013 Safe Software
+ * 2018 Safe Software
  * support@safe.com
  *
  * Unofficial JavaScript Library for FME Server >= 2014. This is not intended to
@@ -10,7 +10,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013 Safe Software
+ * Copyright (c) 2018 Safe Software
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -18,10 +18,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,13 +29,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * 
+ *
  *****************************************************************************/
 
 /**
  * FME Server Library
  * @author Safe Software
- * @version 1.1
+ * @version 3
  * @this FMEServer
  * @return {FMEServer} fme - FME Server connection object
  */
@@ -51,17 +51,17 @@ var FMEServer = ( function() {
             return -1;
         };
     }
-    
+
     if (typeof String.prototype.trim !== 'function') {
         String.prototype.trim = function() {
-            return this.replace(/^\s+|\s+$/g, ''); 
+            return this.replace(/^\s+|\s+$/g, '');
         };
     }
 
     /**
      * Configuration object, holds instance configuration
      */
-    var config = { version : 'v2' };
+    var config = { version : 'v3' };
 
     /**
      * Get Configuration Method
@@ -77,10 +77,26 @@ var FMEServer = ( function() {
     }
 
     /**
+     * Get Simple Response Type
+     * @return {String} - The extracted simple accept type from the config
+     */
+    function getResponseType() {
+        var type = getConfig('accept'),
+            accept = 'json';
+        if (type.indexOf('/') !== -1) {
+            type = type.split(/\//g);
+            if (type[1].length > 0) {
+                accept = type[1];
+            }
+        }
+        return accept;
+    }
+
+    /**
      * Check Config Status
      */
     function checkConfig() {
-        if(getConfig().server && getConfig().token){
+        if(getConfig('server') && getConfig('token')){
             return true;
         }
         throw new Error('You must initialize FMEServer using the FMEServer.init() method.');
@@ -94,8 +110,12 @@ var FMEServer = ( function() {
      * @param {String} params - The json or name=value pair string or parameters
      * @param {String} ctyp - Content type as a string (optional)
      * @param {String} atyp - Accept type as a string (optional)
+
+     ajax(url, callback, 'POST', params, 'application/x-www-form-urlencoded');
+
      */
     function ajax(url, callback, rtyp, params, ctyp, atyp) {
+
         if (checkConfig()) {
             if(callback === null || typeof callback != 'function') {
                 throw new Error('A callback function must be defined in order to use the FME Server REST API.');
@@ -105,16 +125,17 @@ var FMEServer = ( function() {
             params = params || null;
             ctyp = ctyp || null;
             atyp = atyp || getConfig('accept');
-            
+
             if (url.indexOf('?') != -1) {
-                url += '&detail=' + getConfig('detail') + '&token=' + getConfig('token');
+                url += '&detail=' + getConfig('detail');
             } else {
-                url += '?detail=' + getConfig('detail') + '&token=' + getConfig('token');
+                url += '?detail=' + getConfig('detail');
             }
 
             if (getConfig('xdomain')) {
                 if (rtyp == 'GET') {
                     req = new XDomainRequest();
+                    url += '&token=' + getConfig('token');
                     req.open(rtyp, url);
                     req.onload = function() {
                         var resp;
@@ -134,6 +155,7 @@ var FMEServer = ( function() {
             } else {
                 req = new XMLHttpRequest();
                 req.open(rtyp, url, true);
+                req.setRequestHeader('Authorization', 'fmetoken token='+getConfig('token'));
 
                 if (atyp !== null) {
                     req.setRequestHeader('Accept', atyp);
@@ -184,7 +206,7 @@ var FMEServer = ( function() {
 
     // The FME Server Connection Object
     var fme = {
-        
+
         /**
          * Initialize the FME Server connection object
          * @param {Object} config - The object holding the configuration
@@ -209,9 +231,9 @@ var FMEServer = ( function() {
              * @return null - if not valid
              */
             if (server === undefined || (typeof server === 'object' && server.server === undefined)) {
-                throw new Error('You did not specify a server URL in your configuration paramaters.');
+                throw new Error('You did not specify a server URL in your configuration parameters.');
             } else if (token === undefined && (typeof server === 'object' && server.token === undefined)) {
-                throw new Error('You did not specify a token in your configuration paramaters.');
+                throw new Error('You did not specify a token in your configuration parameters.');
             }
 
             /**
@@ -220,7 +242,7 @@ var FMEServer = ( function() {
             if (typeof server == 'object') {
                 getConfig().server = server.server;
                 getConfig().token = server.token;
-                getConfig().accept = server.format || 'json';
+                getConfig().accept = server.format || 'application/json';
                 getConfig().detail =  server.detail || 'high';
                 getConfig().port = server.port || '80';
                 getConfig().ssl = server.ssl || false;
@@ -228,7 +250,7 @@ var FMEServer = ( function() {
             } else {
                 getConfig().server = server;
                 getConfig().token = token;
-                getConfig().accept = format || 'json';
+                getConfig().accept = format || 'application/json';
                 getConfig().detail =  detail || 'high';
                 getConfig().port = port || '80';
                 getConfig().ssl = ssl || false;
@@ -284,9 +306,14 @@ var FMEServer = ( function() {
          * @param {Function} callback - Callback function accepting sessionID as a string
          */
         getSession : function(repository, workspace, callback){
+            var min = 1;
+            var max = 1000000000;
             callback = callback || null;
             var url = buildURL('{{svr}}/fmedataupload/' + repository + '/' + workspace);
-            var params = 'opt_extractarchive=false&opt_pathlevel=3&opt_fullpath=true';
+            var params = 'opt_extractarchive=false&opt_pathlevel=3&opt_fullpath=true&token='
+                + getConfig('token')
+                + '&opt_namespace='
+                + Math.floor(Math.random() * (max - min + 1)) + min;
             ajax(url, callback, 'POST', params, 'application/x-www-form-urlencoded');
         },
 
@@ -300,11 +327,11 @@ var FMEServer = ( function() {
             callback = callback || null;
             var url;
             if (getConfig('server').indexOf('https://') != -1) {
-                url = getConfig('server').replace('https://','');
+                url = getConfig('server').replace('https://','wss://');
             } else {
-                url = getConfig('server').replace('http://','');
+                url = getConfig('server').replace('http://','ws://');
             }
-            var ws = new WebSocket('ws://' + url + ':7078/websocket');
+            var ws = new WebSocket(url + ':7078/websocket');
             ws.onopen = function() {
                 var openMsg = {
                     ws_op : 'open',
@@ -328,12 +355,29 @@ var FMEServer = ( function() {
         runDataDownload : function(repository, workspace, params, callback){
             callback = callback || null;
             var url = buildURL('{{svr}}/fmedatadownload/' + repository + '/' + workspace);
-            params = 'opt_responseformat=' + getConfig('accept') + '&opt_showresult=true&' + params;
-            ajax(url, callback, 'GET', params, 'application/x-www-form-urlencoded');
+            if (params && params.length > 0) {
+                params = '&' + params;
+            }
+            params = 'opt_responseformat=' + getResponseType() + '&opt_showresult=true&token=' + getConfig('token') + params;
+            ajax(url, callback, 'POST', params, 'application/x-www-form-urlencoded');
         },
 
         /**
-         * Upload file(s) using data upload legacy service
+         * Runs a workspace using the Data Streaming service and returns the workspace output
+         * @param {String} repository - The repository on the FME Server
+         * @param {String} workspace - The name of the workspace on FME Server, i.e. workspace.fmw
+         * @param {String} params - Any workspace-specific parameter values
+         * @param {Function} callback - Callback function accepting the workspace return value
+         */
+        runDataStreaming : function(repository, workspace, params, callback){
+            callback = callback || null;
+            var url = buildURL('{{svr}}/fmedatastreaming/' + repository + '/' + workspace);
+            params = 'opt_showresult=true&token=' + getConfig('token') + '&' + params;
+            ajax(url, callback, 'POST', params, 'application/x-www-form-urlencoded');
+        },
+
+        /**
+         * Upload file(s) using data upload service
          * @param {String} repository - The repository on the FME Server
          * @param {String} workspace - The name of the workspace on FME Server, i.e. workspace.fmw
          * @param {Object} files - The form file object
@@ -344,14 +388,20 @@ var FMEServer = ( function() {
             callback = callback || null;
             jsid = jsid || null;
             var url = buildURL('{{svr}}/fmedataupload/' + repository + '/' + workspace);
+            var token = getConfig('token');
             if(jsid !== null) {
-                url += ';jsessionid=' + jsid;
+                url += '?opt_namespace=' + jsid;
+                url += '&opt_fullpath=true';
+                url += '&token=' + token;
+            } else {
+                url += '?token=' + token;
+                url += '&opt_fullpath=true';
             }
             if(!FormData) { // IE9 and Older Browsers that don't support FormData
-                
+
                 // Random number for form and frame id
                 var random = parseInt(Math.random() * 100000000);
-                
+
                 // Create the invisible iframe for the form target
                 var iframe = document.createElement('iframe');
                 iframe.id = random + '-frame';
@@ -382,15 +432,15 @@ var FMEServer = ( function() {
                 callback({ submit : true, id : random });
 
             } else { // New HTML5 Method for browsers that support FormData
-                
+
                 // Chrome 7+, Firefox 4.0 (2.0), IE 10+, Opera 12+, Safari 5+
                 var params = new FormData();
-                
+
                 // Loop through, support for multiple files
                 for(var i = 0; i < files.files.length; i++) {
                     params.append('files[]', files.files[i]);
                 }
-
+                url = url;
                 ajax(url, callback, 'POST', params);
             }
         },
@@ -405,27 +455,32 @@ var FMEServer = ( function() {
         getDataUploads : function(repository, workspace, jsid, callback) {
             callback = callback || null;
             jsid = jsid || null;
-            var url = buildURL('{{svr}}/fmedataupload/' + repository + '/' + workspace + ';jsessionid=' + jsid);
+            var url = buildURL('{{svr}}/fmedataupload/' + repository + '/' + workspace);
+            if (jsid !== null){
+                url += '?opt_namespace=' + jsid;
+                url += '&opt_fullpath=true';
+            }
             ajax(url, callback);
         },
-        
+
         /**
          * Runs a workspace with user uploaded session data
          * @param {String} path - The server path for the session
-         * @param {String} params - The server path for the session
+         * @param {Object} params - The parameter object for running the workspace
          * @param {Function} callback - Callback function accepting the json return value
          */
-        runWorkspaceWithData : function(path, params, callback) {
+        runWorkspaceWithData : function(repository, workspace, params, callback) {
             callback = callback || null;
-            path = path || null;
-            var url = buildURL('{{svr}}/fmedatadownload/' + repository + '/' + workspace + '?');
+            var service = params.service || 'fmedatadownload';
+            var url = buildURL('{{svr}}/' + service + '/' + repository + '/' + workspace + '?');
             var files = params.files;
             var extra = params.params;
             params = params.filename + '=%22%22';
             for(var f in files){
-                params += path + '/' + files[f].name + '%22%20%22';
+                params += files[f].path + '%22%20%22';
             }
-            params += '&' + extra + '&opt_responseformat=json';
+            if(extra){params += '&' + extra};
+            params += '&opt_responseformat=' + getResponseType() + '&token=' + getConfig('token');
             ajax(url+params, callback);
         },
 
@@ -465,72 +520,98 @@ var FMEServer = ( function() {
         },
 
         /**
+         * Retrieves a single published param for a given workspace
+         * @param {String} repository - The repository on the FME Server
+         * @param {String} workspace - The name of the workspace on FME Server, i.e. workspace.fmw
+         * @param {String} parameter - The name of the workspace parameter
+         * @param {Function} callback - Callback function accepting the json return value
+         */
+        getWorkspaceParameter : function(repository, workspace, parameter, callback) {
+            callback = callback || null;
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/repositories/' + repository + '/items/' + workspace + '/parameters/' + parameter);
+            ajax(url, callback);
+        },
+
+        /**
          * Generates a standard workspace parameters form
          * @param {String} id - The container id to place the form elements
          * @param {Object} json - The json object representing the form parameters
+         * @param {Array} items - (Optional) The array of parameter names you wish to expose, by default all parameters are exposed
          */
-        generateFormItems : function(id, json) {
+        generateFormItems : function(id, json, items) {
             var form = document.getElementById(id);
+            //if a single parameter is sent as json, add it into an array first
+            if (typeof json.length == 'undefined'){json = [json];}
             // Loop through the JSON object and build the form
             for(var i = 0; i < json.length; i++) {
                 var param = json[i];
-                var span = document.createElement("span");
-                span.setAttribute("class", param.name + " fmes-form-component");
-                var label = document.createElement("label");
-                label.innerHTML = param.description;
-                span.appendChild(label);
-                var choice;
-                if(param.type === "FILE_OR_URL") {
-                    choice = document.createElement("input");
-                    choice.type = "file";
-                    choice.name = param.name;
-                } else if(param.type === "LISTBOX") {
-                    choice = document.createElement("div");
-                    var options = param.listOptions;
-                    for(var a = 0; a < options.length; a++) {
-                        var option = options[a];
-                        var checkbox = document.createElement("input");
-                        checkbox.type = "checkbox";
-                        checkbox.value = option.value;
-                        checkbox.name = param.name;
-                        choice.appendChild(checkbox);
-                        var caption = document.createElement("label");
-                        caption.innerHTML = option.caption;
-                        choice.appendChild(caption);
+                if (!items || items.indexOf(param.name) !== -1) {
+                    var span = document.createElement("span");
+                    span.setAttribute("class", param.name + " fmes-form-component");
+                    var label = document.createElement("label");
+                    label.innerHTML = param.description;
+                    span.appendChild(label);
+                    var choice;
+                    if(param.type === "FILE_OR_URL" || param.type === "FILENAME_MUSTEXIST" || param.type === "FILENAME") {
+                        choice = document.createElement("input");
+                        choice.type = "file";
+                        choice.name = param.name;
+                    } else if(param.type === "LISTBOX" || param.type === "LOOKUP_LISTBOX") {
+                        choice = document.createElement("div");
+                        var options = param.listOptions;
+                        for(var a = 0; a < options.length; a++) {
+                            var option = options[a];
+                            var checkbox = document.createElement("input");
+                            checkbox.type = "checkbox";
+                            checkbox.value = option.value;
+                            checkbox.name = param.name;
+                            choice.appendChild(checkbox);
+                            var caption = document.createElement("label");
+                            caption.innerHTML = option.caption;
+                            choice.appendChild(caption);
+														if (checkbox.value == param.defaultValue) {
+															checkbox.checked = true;
+														}
+                        }
+                    } else if(param.type === "LOOKUP_CHOICE" ||
+                              param.type === "STRING_OR_CHOICE" ||
+                              param.type === "CHOICE")
+                    {
+                        choice = document.createElement("select");
+                        choice.name = param.name;
+                        var options = param.listOptions;
+                        for(var a = 0; a < options.length; a++) {
+                            var option = options[a];
+                            var optionItem = document.createElement("option");
+                            optionItem.innerHTML = option.caption;
+                            optionItem.value = option.value;
+                            choice.appendChild(optionItem);
+														if (optionItem.value == param.defaultValue) {
+															optionItem.selected = true;
+														}
+                        }
+                    } else if(param.type  === "TEXT_EDIT") {
+                        choice = document.createElement("textarea");
+                        choice.name = param.name;
+												choice.value = param.defaultValue;
+                    } else if(param.type  == "INTEGER") {
+                        choice = document.createElement("input");
+                        choice.type = "number";
+                        choice.name = param.name;
+												choice.value = param.defaultValue;
+                    } else if(param.type  == "PASSWORD") {
+                        choice = document.createElement("input");
+                        choice.type = "password";
+                        choice.name = param.name;
+                    } else {
+                        choice = document.createElement("input");
+                        choice.value = param.defaultValue;
+                        choice.name = param.name;
                     }
-                } else if(param.type === "LOOKUP_CHOICE" ||
-                          param.type === "STRING_OR_CHOICE" ||
-                          param.type === "CHOICE")
-                {
-                    choice = document.createElement("select");
-                    choice.name = param.name;
-                    var options = param.listOptions;
-                    for(var a = 0; a < options.length; a++) {
-                        var option = options[a];
-                        var optionItem = document.createElement("option");
-                        optionItem.innerHTML = option.caption;
-                        optionItem.value = option.value;
-                        choice.appendChild(optionItem);
-                    }
-                } else if(param.type  === "TEXT_EDIT") {
-                    choice = document.createElement("textarea");
-                    choice.name = param.name;
-                } else if(param.type  == "INTEGER") {
-                    choice = document.createElement("input");
-                    choice.type = "number";
-                    choice.name = param.name;
-                } else if(param.type  == "PASSWORD") {
-                    choice = document.createElement("input");
-                    choice.type = "password";
-                    choice.name = param.name;
-                } else {
-                    choice = document.createElement("input");
-                    choice.value = param.defaultValue;
-                    choice.name = param.name;
-                }
 
-                span.appendChild(choice);
-                form.appendChild(span);
+                    span.appendChild(choice);
+                    form.appendChild(span);
+                }
             }
         },
 
@@ -554,32 +635,6 @@ var FMEServer = ( function() {
             callback = callback || null;
             var url = buildURL('{{svr}}/fmerest/{{ver}}/schedules/' + category + '/' + item);
             ajax(url, callback);
-        },
-
-        /**
-         * Enables a scheduled item
-         * @param {String} category - Schedule category title
-         * @param {String} name - Schedule name
-         * @param {Function} callback - Callback function accepting the json return value
-         */
-        enableScheduleItem : function(category, item, callback) {
-            callback = callback || null;
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/schedules/' + category + '/' + item + '/enabled');
-            var params = 'value=true';
-            ajax(url, callback, 'PUT', params, 'application/x-www-form-urlencoded');
-        },
-
-        /**
-         * Disables a scheduled item
-         * @param {String} category - Schedule category title
-         * @param {String} item - Schedule name
-         * @param {Function} callback - Callback function accepting the json return value
-         */
-        disableScheduleItem : function(category, item, callback) {
-            callback = callback || null;
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/schedules/' + category + '/' + item + '/enabled');
-            var params = 'value=false';
-            ajax(url, callback, 'PUT', params, 'application/x-www-form-urlencoded');
         },
 
         /**
@@ -637,7 +692,7 @@ var FMEServer = ( function() {
          */
         getPublication : function(name, callback) {
             callback = callback || null;
-            name = encodeURIComponent(name).replace(/%20/g, '+');
+            name = encodeURIComponent(name);
             var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/publications/' + name);
             ajax(url, callback);
         },
@@ -662,7 +717,7 @@ var FMEServer = ( function() {
          */
         updatePublication : function(name, publication, callback) {
             callback = callback || null;
-            name = encodeURIComponent(name).replace(/%20/g, '+');
+            name = encodeURIComponent(name);
             var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/publications/' + name);
             var params = JSON.stringify(publication);
             ajax(url, callback, 'PUT', params, 'application/json');
@@ -675,7 +730,7 @@ var FMEServer = ( function() {
          */
         deletePublication : function(name, callback) {
             callback = callback || null;
-            name = encodeURIComponent(name).replace(/%20/g, '+');
+            name = encodeURIComponent(name);
             var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/publications/' + name);
             ajax(url, callback, 'DELETE');
         },
@@ -718,8 +773,8 @@ var FMEServer = ( function() {
          */
         getSubscription : function(name, callback) {
             callback = callback || null;
-            name = encodeURIComponent(name).replace(/%20/g, '+');
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/subscription/' + name);
+            name = encodeURIComponent(name);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/subscriptions/' + name);
             ajax(url, callback);
         },
 
@@ -743,8 +798,9 @@ var FMEServer = ( function() {
          */
         updateSubscription : function(name, subscription, callback) {
             callback = callback || null;
-            name = encodeURIComponent(name).replace(/%20/g, '+');
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/subscription/' + name);
+            name = encodeURIComponent(name);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/subscriptions/' + name);
+            console.log(url);
             var params = JSON.stringify(subscription);
             ajax(url, callback, 'PUT', params, 'application/json');
         },
@@ -756,7 +812,7 @@ var FMEServer = ( function() {
          */
         deleteSubscription : function(name, callback) {
             callback = callback || null;
-            name = encodeURIComponent(name).replace(/%20/g, '+');
+            name = encodeURIComponent(name);
             var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/subscriptions/' + name);
             ajax(url, callback, 'DELETE');
         },
@@ -800,7 +856,7 @@ var FMEServer = ( function() {
         getNotificationTopic : function(name, callback) {
             callback = callback || null;
             name = encodeURIComponent(name);
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics' + name);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics/' + name);
             ajax(url, callback);
         },
 
@@ -829,7 +885,7 @@ var FMEServer = ( function() {
             callback = callback || null;
             name = encodeURIComponent(name);
             description = encodeURIComponent(description).replace(/%20/g, '+');
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics' + name);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics/' + name);
             var params = "description=" + description;
             ajax(url, callback, 'PUT', params, 'application/x-www-form-urlencoded');
         },
@@ -842,49 +898,43 @@ var FMEServer = ( function() {
         deleteTopic : function(name, callback) {
             callback = callback || null;
             name = encodeURIComponent(name);
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics' + name);
-            ajax(url, callback, 'DELETE', null, 'application/x-www-form-urlencoded');
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics/' + name);
+            ajax(url, callback, 'DELETE');
         },
 
         /**
          * Publish JSON or XML to a topic
          * @param {String} name - Topic name
-         * @param {String} params - The data as a json string or xml string
-         * @param {String} type - The type of data (JSON or XML)
+         * @param {String} message - The data as a json string or xml string
          * @param {Function} callback - Callback function accepting the json return value
          */
-        publishToTopicStructured : function(name, params, type, callback) {
+        publishToTopicStructured : function(name, message, callback) {
             callback = callback || null;
             name = encodeURIComponent(name);
-            type = type.toLowerCase() || 'json';
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics/' + name + '/message/map');
-            if (type == 'xml') {
-                type = 'application/xml';
-            } else {
-                type = 'application/json';
-                try {
-                    params = JSON.parse(params);
-                    params = JSON.stringify(params);
-                } catch(e) {
-                    var message = { message : 'Unable to parse JSON' };
-                    callback(message);
-                    return false;
-                }
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics/' + name + '/message');
+            var type = 'application/json';
+            try {
+                message = JSON.parse(message);
+                message = JSON.stringify(message);
+            } catch(e) {
+                var response = { response : 'Unable to parse JSON' };
+                callback(response);
+                return false;
             }
-            ajax(url, callback, 'POST', params, type);
+            ajax(url, callback, 'POST', message, type);
         },
 
         /**
          * Publish anything to a topic
          * @param {String} name - Topic name
-         * @param {Object} or {String} params - The raw text data
+         * @param {Object} or {String} message - The raw text data
          * @param {Function} callback - Callback function accepting the json return value
          */
-        publishToTopic : function(name, params, callback) {
+        publishToTopic : function(name, message, callback) {
             callback = callback || null;
             name = encodeURIComponent(name);
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics/' + name + '/message/raw');
-            ajax(url, callback, 'POST', params, '*/*');
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/notifications/topics/' + name + '/message/subscribercontent');
+            ajax(url, callback, 'POST', message, '*/*');
         },
 
         /**
@@ -918,7 +968,7 @@ var FMEServer = ( function() {
          */
         submitJob : function(repository, workspace, params, callback) {
             callback = callback || null;
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/transformations/commands/submit/' + repository + '/' + workspace);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/transformations/submit/' + repository + '/' + workspace);
             params = JSON.stringify(params);
             ajax(url, callback, 'POST', params, 'application/json');
         },
@@ -932,36 +982,49 @@ var FMEServer = ( function() {
          */
         submitSyncJob : function(repository, workspace, params, callback) {
             callback = callback || null;
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/transformations/commands/transact/' + repository + '/' + workspace);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/transformations/transact/' + repository + '/' + workspace);
             params = JSON.stringify(params);
             ajax(url, callback, 'POST', params, 'application/json');
         },
 
         /**
-         * Get a List of All Shared Resources
+         * Get a List of All Shared Resource Connections
          * @param {Function} callback - Callback function accepting the json return value
          */
         getResources : function(callback) {
             callback = callback || null;
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources');
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/connections');
             ajax(url, callback);
         },
 
         /**
-         * Get Resource Details
+         * Get Resource Connection details
          * @param {String} resource - The resource name
-         * @param {String} path - The file path within the resource on the server
          * @param {Function} callback - Callback function accepting the json return value
          */
-        getResourceDetails : function(resource, path, callback) {
+        getResourceDetails : function(resource, callback) {
             callback = callback || null;
-            path = encodeURIComponent(path).replace(/%2F/g, '/');
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/' + resource + '/filesys' + path);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/connections/' + resource);
             ajax(url, callback);
         },
 
         /**
-         * Delete Resource
+         * Get the metadata for a directory or regular file inside a Resource Connection
+         * @param {String} resource - The resource name
+         * @param {String} path - The folder or file path within the resource on the server
+         * @param {String} depth - The number of directory levels deep from which to retrieve metadata
+         * @param {Function} callback - Callback function accepting the json return value
+         */
+        getResourceContents : function(resource, path, depth, callback) {
+            callback = callback || null;
+            path = path || '/';
+            path = encodeURIComponent(path).replace(/%2F/g, '/');
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/connections/' + resource + '/filesys' + path + '?depth=' + depth);
+            ajax(url, callback);
+        },
+
+        /**
+         * Delete Resource File
          * @param {String} resource - The resource name
          * @param {String} path - The file path within the resource on the server
          * @param {Function} callback - Callback function accepting the json return value
@@ -969,7 +1032,7 @@ var FMEServer = ( function() {
         deleteResource : function(resource, path, callback) {
             callback = callback || null;
             path = encodeURIComponent(path).replace(/%2F/g, '/');
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/' + resource + '/filesys' + path);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/connections/' + resource + '/filesys' + path);
             ajax(url, callback, 'DELETE');
         },
 
@@ -980,7 +1043,7 @@ var FMEServer = ( function() {
          */
         downloadResourceFile : function(resource, path) {
             path = encodeURIComponent(path).replace(/%2F/g, '/');
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/' + resource + '/filesys' + path + '?accept=contents');
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/connections/' + resource + '/filesys' + path + '?accept=contents');
             var iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
@@ -991,19 +1054,28 @@ var FMEServer = ( function() {
          * Upload Resource File
          * @param {String} resource - The resource name
          * @param {String} path - The file path within the resource on the server
-         * @param {Object} params - The custom file input object { name : name, contents : contents }
+         * @param {Object} files - The form file object
          * @param {Function} callback - Callback function accepting the json return value
          * @param {Boolean} overwrite - Overwrite files, true or false(default)
          * @param {Boolean} createFolders - Create folders from path, true or false(default)
          */
-        uploadResourceFile : function(resource, path, params, callback, overwrite, createFolders) {
+        uploadResourceFile : function(resource, path, files, callback, overwrite, createFolders) {
             callback = callback || null;
             overwrite = overwrite || false;
             createFolders = createFolders || false;
             path = encodeURIComponent(path).replace(/%2F/g, '/');
-            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/' + resource + '/filesys' + path);
+            var url = buildURL('{{svr}}/fmerest/{{ver}}/resources/connections/' + resource + '/filesys' + path);
             url = url + '?createDirectories=' + createFolders + '&overwrite=' + overwrite + '&type=FILE';
-            ajax(url, callback, 'POST', params, 'attachment');
+
+            var params = new FormData();
+
+            // Loop through, support for multiple files
+            for(var i = 0; i < files.files.length; i++) {
+                params.append('files[]', files.files[i]);
+            }
+
+            url = url;
+            ajax(url, callback, 'POST', params);
         },
 
         /**
@@ -1026,6 +1098,6 @@ var FMEServer = ( function() {
 
     /**
      * Return the constructed FMEServer Connection Object
-     */ 
+     */
     return fme;
 }());

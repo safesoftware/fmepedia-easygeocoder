@@ -1,7 +1,11 @@
 $(document).ready(function() {
-    $.getJSON("http://demos.fmeserver.com.s3.amazonaws.com/server-demo-config.json", function(config) {
-        initialize(config.initObject);
-    });
+   // $.getJSON("http://demos.fmeserver.com.s3.amazonaws.com/server-demo-config.json", function(config) {
+     //   initialize(config.initObject);
+   //});
+    var initObject = { server: "http://nh-linux-core", token : "93172e26b64757b745685bdbc9a35054502a8f16"};
+
+    initialize(initObject);
+
 });
 
 function initialize(initObject) {
@@ -10,19 +14,24 @@ function initialize(initObject) {
 
     //initialize behaviour for file upload
     $('#fileupload').fileupload({
-			url : BuildForm.host + '/fmedataupload/' + BuildForm.repository + '/' +  BuildForm.workspaceName,
-			headers : {'Authorization' : 'fmetoken token=' + BuildForm.token},
+        url : initObject.server + '/fmedataupload/' + 'EasyGeocoder' + '/' +  'GenerateSchemaElements.fmw?opt_fullpath=true',
+        headers : {'Authorization' : 'fmetoken token=' + initObject.token},
         dropzone : $('#dropzone'),
         autoUpload : true,
+        
 
         add: function (e, data) {
             data.submit();
         },
 
         done : function(e, data) {
-            //when file has been uploaded, capture JSON response from FME Server
-            //and use file path to run workspace
-            var filePath = data.result.serviceResponse.files.file[0].path;
+            var fileName
+            //when file has been uploaded, capture file name and JSON response from FME Server
+            //and use full file path to run workspace
+            $.each(data.files, function (index, file) {
+                fileName = file.name
+            });
+            var filePath = data.result.serviceResponse.files.folder[0].path + '/' + fileName;
 
             geocoder.requestSchema(filePath);
         },
@@ -70,7 +79,6 @@ function initialize(initObject) {
         host : initObject.server,
         token : initObject.token
     });
-
 }
 
 var geocoder = (function() {
@@ -111,11 +119,11 @@ var geocoder = (function() {
     }
 
     function getParams() {
-        var address = document.getElementById("Address_field").value;
-        var city = document.getElementById("City_field").value;
-        var province = document.getElementById("StateProvince_field").value;
-        var postalcode = document.getElementById("PostalCode_field").value;
-        var country = document.getElementById("Country_field").value;
+        var address = document.getElementById("address").value;
+        var city = document.getElementById("city").value;
+        var province = document.getElementById("state").value;
+        var postalcode = document.getElementById("postalcode").value;
+        var country = document.getElementById("country").value;
 
         var params = 'SourceDataset=' + fileLocation;
         params = params + '&AddressAttr=' + address;
@@ -128,7 +136,7 @@ var geocoder = (function() {
 
         return encodedParams;
     }
-
+    // If the user presses the reset button, clear the dropdowns
     function clearDropdowns() {
         document.getElementById('address').innerHTML = '';
         document.getElementById('city').innerHTML = '';
@@ -137,35 +145,21 @@ var geocoder = (function() {
         document.getElementById('country').innerHTML = '';
     }
 
-    function initGoogleMap() {
-        //init google maps
+    function initMap() {
+        //init map
         loading = new Image();
-        loading.src = "libs/upload/img/loading.gif";
+        loading.src = "libs/upload/img/spinner.gif";
         loading.id = "loadingImg";
 
-        //google maps init
-        var mapStyles = [ {
-            featureType : "all",
-            elementType : "labels",
-            stylers : [ { visibility : "off" } ]
-        }];
+        L.mapbox.accessToken = 'pk.eyJ1IjoibmF0aGFuYXRzYWZlIiwiYSI6ImNqazRqN2VuazA0dHczcXAyYjkyeTczcnUifQ.ZcD7wuTSCbsLRb_Y-drHjg';
 
-        var mapOptions = {
-            zoom: 3,
-            center: new google.maps.LatLng( 50.355, -97.855 ),
-            mapTypeId : google.maps.MapTypeId.SATELLITE,
-            disableDefaultUI : true,
-            zoomControl : true,
-            panControl : true
-        };
-
-        map = new google.maps.Map( document.getElementById( "mapDiv" ), mapOptions );
-
-        google.maps.event.addListenerOnce( map, 'idle', function() {
-            map.setOptions( { styles : mapStyles } );
-            document.getElementById( "mapDiv" ).appendChild( loading );
+        map = L.mapbox.map('mapDiv', 'mapbox.streets').setView([40,-105],4);
+        
+        map.once("ready", function() {
+            map.invalidateSize();
+            document.getElementById( "mapDiv" ).appendChild( loading )
         });
-    }
+    };
 
     function dataLoadError() {
         //display a useful error message
@@ -194,41 +188,34 @@ var geocoder = (function() {
             var params = 'SourceDataset_SCHEMA=' + filePath;
             var url = host + '/fmedatastreaming/' + repository + '/' + schemaWorkspace + '?' + params;
             FMEServer.customRequest(url, 'GET' ,displayNextStep);
+            console.log(url)
         },
-
+        // Reset button function
         backToUpload : function() {
             clearDropdowns();
             document.getElementById('dropdowns').style.display = 'none';
             document.getElementById('content').style.display = 'block';
         },
-
+        // Restart button function
         restart : function() {
             window.location.reload();
         },
-
+        //Add the data to the map
         displayMap : function() {
             var params = getParams();
             var url = host + '/fmedatastreaming/' + repository + '/'+ geocodeWorkspace + '?' + params + '&token=' + token;
-
-            initGoogleMap();
+            console.log(url);
+            initMap();
 
             loading.style.display = 'block';
 
-            layer = new google.maps.KmlLayer( url, {
-                preserveViewport : false,
-                map : map
-            });
-
-            layer.status_changed = function() {
-                if (layer.status = 'FETCH_ERROR'){
-                    dataLoadError();
-                }
-                loading.style.display = 'none';
-            };
+            layer = L.mapbox.featureLayer(url).on('ready', function() {
+                map.fitBounds(layer.getBounds(), {maxZoom : 12});
+                loading.style.display = 'none'
+            }).addTo(map);
 
             document.getElementById('dropdowns').style.display = 'none';
             document.getElementById('mapPage').style.display = 'block';
         }
     };
-
 }());
