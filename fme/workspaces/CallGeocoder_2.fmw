@@ -1,13 +1,13 @@
 #! <?xml version="1.0" encoding="UTF-8" ?>
 #! <WORKSPACE
 #    Command-line to run this workspace:
-#        "/Library/FME/2018.1 18522/fme" "/Users/nhildebrand/Documents/Web Demos/easygeocoder.changes/fme/workspaces/CallGeocoder2.fmw"
+#        /Library/FME/2018.1/fme /Users/gfischl/GitHub/fmepedia-easygeocoder/fme/workspaces/CallGeocoder_2.fmw
 #              --AddressAttr "AddressLine1"
 #              --CityAttr "City"
 #              --ProvinceAttr "StateProvince"
 #              --PostalCodeAttr ""
 #              --CountryAttr ""
-#              --DestDataset_GEOJSON "GeocodedResults.json"
+#              --SourceDataset "/Users/nhildebrand/Downloads/SampleFile (13).csv"
 #    
 #!   ATTR_TYPE_ENCODING="SDF"
 #!   BEGIN_PYTHON=""
@@ -21,9 +21,9 @@
 #!   END_PYTHON=""
 #!   END_TCL=""
 #!   EXPLICIT_BOOKMARK_ORDER="false"
-#!   FME_BUILD_NUM="18522"
-#!   FME_DOCUMENT_GUID="6a66878f-da57-4206-8c02-be81917d91a4"
-#!   FME_DOCUMENT_PRIORGUID="cdeaf10c-ea79-11e3-9a8d-d3c5ab7d1ca8,1a423706-ea7d-11e3-896a-b4134a57705e,8f5363d8-ea98-11e3-896a-b4134a57705e,8516e430-eab1-11e3-896a-b4134a57705e,61911d10-eb78-11e3-9e72-a06b92e0836f,b25b4d1e-eb79-11e3-9e72-a06b92e0836f,c7d4c5f6-fbed-11e3-8c6b-fca3c6ca0c69,d3b73e20-023d-11e4-8bf2-f8cc49468dde,7abfeca2-03a2-11e4-84b7-a1711b4740fd,c4a29abc-0ecf-11e4-8f66-86d94e464774,e6528e42-1131-11e4-8f7d-f9e94e7336e9,0dd2e28c-1691-11e4-9de0-e4e97fa249a6,39e804c7-6c2d-4063-a879-c8f61e746e81,c0df9790-8e97-4aa3-9d56-9989edd6f5d2,2c7c9521-85d3-411c-bc66-64d1b5ceca74,77d82346-9952-4f9d-b4e2-f40e1fe08c56,5932d861-135c-4832-9c15-304826497724"
+#!   FME_BUILD_NUM="18528"
+#!   FME_DOCUMENT_GUID="94f154cd-67f1-4efd-a875-342092bd1578"
+#!   FME_DOCUMENT_PRIORGUID="cdeaf10c-ea79-11e3-9a8d-d3c5ab7d1ca8,1a423706-ea7d-11e3-896a-b4134a57705e,8f5363d8-ea98-11e3-896a-b4134a57705e,8516e430-eab1-11e3-896a-b4134a57705e,61911d10-eb78-11e3-9e72-a06b92e0836f,b25b4d1e-eb79-11e3-9e72-a06b92e0836f,c7d4c5f6-fbed-11e3-8c6b-fca3c6ca0c69,d3b73e20-023d-11e4-8bf2-f8cc49468dde,7abfeca2-03a2-11e4-84b7-a1711b4740fd,c4a29abc-0ecf-11e4-8f66-86d94e464774,e6528e42-1131-11e4-8f7d-f9e94e7336e9,0dd2e28c-1691-11e4-9de0-e4e97fa249a6,39e804c7-6c2d-4063-a879-c8f61e746e81,c0df9790-8e97-4aa3-9d56-9989edd6f5d2,2c7c9521-85d3-411c-bc66-64d1b5ceca74,77d82346-9952-4f9d-b4e2-f40e1fe08c56,5932d861-135c-4832-9c15-304826497724,6a66878f-da57-4206-8c02-be81917d91a4"
 #!   FME_GEOMETRY_HANDLING="Enhanced"
 #!   FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Auto"
 #!   FME_REPROJECTION_ENGINE="FME"
@@ -31,8 +31,8 @@
 #!   FME_STROKE_MAX_DEVIATION="0"
 #!   HISTORY=""
 #!   IGNORE_READER_FAILURE="No"
-#!   LAST_SAVE_BUILD="FME(R) 2018.1.0.1 (20180720 - Build 18522 - macosx)"
-#!   LAST_SAVE_DATE="2018-08-03T13:56:00"
+#!   LAST_SAVE_BUILD="FME(R) 2018.1.0.1 (20180730 - Build 18528 - macosx)"
+#!   LAST_SAVE_DATE="2018-08-24T12:50:51"
 #!   LOG_FILE=""
 #!   LOG_MAX_RECORDED_FEATURES="200"
 #!   MARKDOWN_DESCRIPTION=""
@@ -50,7 +50,7 @@
 #!   TITLE=""
 #!   USAGE=""
 #!   USE_MARKDOWN=""
-#!   VIEW_POSITION="-32.9272 431.712"
+#!   VIEW_POSITION="-219.514 373.174"
 #!   WARN_INVALID_XFORM_PARAM="Yes"
 #!   WORKSPACE_VERSION="1"
 #!   ZOOM_SCALE="82"
@@ -60,7 +60,7 @@
 #!   IS_SOURCE="true"
 #!   ROLE="READER"
 #!   FORMAT="CSV2"
-#!   DATASET="/Users/nhildebrand/Downloads/SampleFile (13).csv"
+#!   DATASET="$(SourceDataset)"
 #!   KEYWORD="CSV2_1"
 #!   MULTI_GEOM_ALLOWED="false"
 #!   ATTR_MAX_LENGTH="0"
@@ -69,7 +69,7 @@
 #!   WRITE_DEFS="true"
 #!   DEFLINE_TEMPLATE=""
 #!   DEFLINE_ATTRS="true"
-#!   EXPOSABLE_ATTRS="csv_total_number_of_columns uint32 csv_type string fme_color string fme_basename string csv_skipped_line string multi_reader_type string fme_type string csv_number_of_fields uint32 fme_rotation string fme_fill_color string fme_secondary_axis string fme_feature_type string fme_text_size string fme_dataset string multi_reader_full_id string multi_reader_keyword string fme_sweep_angle string fme_primary_axis string multi_reader_id string fme_geometry string fme_start_angle string fme_text_string string csv_line_number uint64"
+#!   EXPOSABLE_ATTRS="fme_type string fme_dataset string fme_geometry string csv_line_number uint64 fme_basename string fme_feature_type string fme_color string fme_secondary_axis string fme_primary_axis string multi_reader_id string multi_reader_type string fme_rotation string fme_start_angle string multi_reader_full_id string fme_text_string string fme_sweep_angle string fme_text_size string csv_total_number_of_columns uint32 csv_skipped_line string multi_reader_keyword string csv_number_of_fields uint32 fme_fill_color string csv_type string"
 #!   DEFLINE_PARMS=""
 #!   ATTR_INDEX_TYPES=""
 #!   ATTR_NAME_INVALID_CHARS=""
@@ -118,7 +118,7 @@
 #!   IS_SOURCE="false"
 #!   ROLE="WRITER"
 #!   FORMAT="GEOJSON"
-#!   DATASET="$(DestDataset_GEOJSON)"
+#!   DATASET="$(FME_DATA_REPOSITORY)GeocodedResults.json"
 #!   KEYWORD="GEOJSON_1"
 #!   MULTI_GEOM_ALLOWED="true"
 #!   ATTR_MAX_LENGTH="600"
@@ -127,7 +127,7 @@
 #!   WRITE_DEFS="true"
 #!   DEFLINE_TEMPLATE=""
 #!   DEFLINE_ATTRS="true"
-#!   EXPOSABLE_ATTRS="fme_primary_axis float fme_basename string fme_start_angle float fme_fill_color string fme_feature_type string fme_geometry string fme_text_string string fme_type string fme_rotation float fme_secondary_axis float fme_color string fme_text_size float fme_sweep_angle float fme_dataset string"
+#!   EXPOSABLE_ATTRS="fme_sweep_angle float fme_basename string fme_feature_type string fme_type string fme_text_size float fme_fill_color string fme_rotation float fme_color string fme_dataset string fme_geometry string fme_text_string string fme_secondary_axis float fme_primary_axis float fme_start_angle float"
 #!   DEFLINE_PARMS=""
 #!   ATTR_INDEX_TYPES=""
 #!   ATTR_NAME_INVALID_CHARS=""
@@ -877,20 +877,36 @@
 #!   NAME="EasyGeocoder"
 #! />
 #! <ITEM
-#!   NAME="CallGeocoder.fmw"
+#!   NAME="CallGeocoder_2.fmw"
 #! />
 #! <MODIFICATIONS>
 #! <MODIFICATION
 #!   UID=":DatasetMgr_CSV2_1:SourceDataset_CSV2_1"
-#!   VALUE="/Users/nhildebrand/Downloads/SampleFile (13).csv"
+#!   VALUE="$(SourceDataset)"
 #! />
 #! <MODIFICATION
 #!   UID=":DatasetMgr_GEOJSON_1:DestDataset_GEOJSON_1"
-#!   VALUE="$(DestDataset_GEOJSON)"
+#!   VALUE="$(FME_DATA_REPOSITORY)GeocodedResults.json"
 #! />
 #! <MODIFICATION
-#!   UID=":GlobalParameterMgr:DestDataset_GEOJSON"
-#!   VALUE="$(FME_DATA_REPOSITORY)GeocodedResults.json"
+#!   UID=":GlobalParameterMgr:FME_SERVER_DEST_DIR"
+#!   VALUE=""
+#! />
+#! <MODIFICATION
+#!   UID=":GlobalParameterMgr:FME_SHAREDRESOURCE_DATA"
+#!   VALUE=""
+#! />
+#! <MODIFICATION
+#!   UID=":GlobalParameterMgr:FME_SHAREDRESOURCE_TEMP"
+#!   VALUE=""
+#! />
+#! <MODIFICATION
+#!   UID=":GlobalParameterMgr:FME_TOPIC_MESSAGE"
+#!   VALUE=""
+#! />
+#! <MODIFICATION
+#!   UID=":GlobalParameterMgr:SourceDataset"
+#!   VALUE="/Users/nhildebrand/Downloads/SampleFile (13).csv"
 #! />
 #! <MODIFICATION
 #!   UID=":WBDoc:DESTINATION_ROUTING_FILE"
@@ -898,6 +914,10 @@
 #! />
 #! <MODIFICATION
 #!   UID=":WBDoc:LOG_FILE"
+#!   VALUE=""
+#! />
+#! <MODIFICATION
+#!   UID=":WBDoc:SOURCE_ROUTING_FILE"
 #!   VALUE=""
 #! />
 #! </MODIFICATIONS>
@@ -943,8 +963,8 @@
 #!   IS_STAND_ALONE="true"
 #! />
 #! <GLOBAL_PARAMETER
-#!   GUI_LINE="GUI FILENAME DestDataset_GEOJSON GeoJSON_Files(*.json)|*.json|All_Files|* Destination GeoJSON File:"
-#!   DEFAULT_VALUE="$(FME_DATA_REPOSITORY)GeocodedResults.json"
+#!   GUI_LINE="GUI MULTIFILE SourceDataset CSV/Compressed_CSV/TEXT_Files(*.csv;*.gz;*.txt)|*.csv;*.gz;*.txt|CSV_Files(*.csv)|*.csv|Compressed_CSV_Files(*.gz)|*.gz|Text_Files(*.txt)|*.txt|All_Files|* Source CSV (Comma Separated Value) File(s):"
+#!   DEFAULT_VALUE="/Users/nhildebrand/Downloads/SampleFile (13).csv"
 #!   IS_STAND_ALONE="false"
 #! />
 #! <GLOBAL_PARAMETER
@@ -1230,11 +1250,11 @@ DEFAULT_MACRO PostalCodeAttr
 GUI OPTIONAL TEXT PostalCodeAttr Postal Code/Zip:
 DEFAULT_MACRO CountryAttr 
 GUI OPTIONAL TEXT CountryAttr Country:
-DEFAULT_MACRO DestDataset_GEOJSON $(FME_DATA_REPOSITORY)GeocodedResults.json
-GUI FILENAME DestDataset_GEOJSON GeoJSON_Files(*.json)|*.json|All_Files|* Destination GeoJSON File:
+DEFAULT_MACRO SourceDataset /Users/nhildebrand/Downloads/SampleFile (13).csv
+GUI MULTIFILE SourceDataset CSV/Compressed_CSV/TEXT_Files(*.csv;*.gz;*.txt)|*.csv;*.gz;*.txt|CSV_Files(*.csv)|*.csv|Compressed_CSV_Files(*.gz)|*.gz|Text_Files(*.txt)|*.txt|All_Files|* Source CSV (Comma Separated Value) File(s):
 DEFAULT_MACRO GeocoderURL http://services.gisgraphy.com/geocoding/geocode?
 GUI IGNORE OPTIONAL TEXT GeocoderURL Geocoder URL:
-INCLUDE [ if {{$(DestDataset_GEOJSON)} == {}} { puts_real {Parameter 'DestDataset_GEOJSON' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(SourceDataset)} == {}} { puts_real {Parameter 'SourceDataset' must be given a value.}; exit 1; }; ]
 #! START_HEADER
 #! START_WB_HEADER
 READER_TYPE MULTI_READER
@@ -1256,15 +1276,7 @@ MACRO WB_KEYWORD "CSV2_1"
 # The user input is stored in a macro, which is then used to define
 # the dataset to be read.
 # The dataset this mapping file was generated from was:
-#! END_SOURCE_HEADER
-#! START_WB_HEADER
-DEFAULT_MACRO SourceDataset
-INCLUDE [ if {{$(SourceDataset)} != ""} {                        \
- puts {DEFAULT_MACRO SourceDataset_CSV2_1 $(SourceDataset)}     \
- } ]
-#! END_WB_HEADER
-#! START_SOURCE_HEADER CSV2 CSV2_1
-DEFAULT_MACRO SourceDataset_CSV2_1 /Users/nhildebrand/Downloads/SampleFile (13).csv
+DEFAULT_MACRO SourceDataset_CSV2_1 $(SourceDataset)
 GUI MULTIFILE SourceDataset_CSV2_1 CSV/Compressed_CSV/TEXT_Files(*.csv;*.gz;*.txt)|*.csv;*.gz;*.txt|CSV_Files(*.csv)|*.csv|Compressed_CSV_Files(*.gz)|*.gz|Text_Files(*.txt)|*.txt|All_Files|* Source CSV (Comma Separated Value) File(s):
 DEFAULT_MACRO CSV2_IN_FEATURE_TYPE_NAME_CSV2_1 FORMAT_NAME
 CSV2_1_FEATURE_TYPE_NAME "$(CSV2_IN_FEATURE_TYPE_NAME_CSV2_1)"
@@ -1354,7 +1366,7 @@ INCLUDE [ if {"$(DestDataset)" != ""} {                          \
  } ]
 #! END_WB_HEADER
 #! START_DEST_HEADER GEOJSON GEOJSON_1
-DEFAULT_MACRO DestDataset_GEOJSON_1 $(DestDataset_GEOJSON)
+DEFAULT_MACRO DestDataset_GEOJSON_1 $(FME_DATA_REPOSITORY)GeocodedResults.json
 GUI FILENAME DestDataset_GEOJSON_1 GeoJSON_Files(*.json)|*.json|All_Files|* Destination GeoJSON File:
 DEFAULT_MACRO GEOJSON_OUT_FME_GROUP_NAMED1_GEOJSON_1 
 GUI OPTIONAL DISCLOSUREGROUP GEOJSON_OUT_FME_GROUP_NAMED1_GEOJSON_1 GEOJSON_OUT_WRITER_CHARSET_GEOJSON_1%GEOJSON_OUT_WRITE_BOM_GEOJSON_1%GEOJSON_OUT_STRICT_SPEC_GEOJSON_1 Writer Parameters
@@ -1403,9 +1415,10 @@ GEOJSON_1_DATASET "$(DestDataset_GEOJSON_1)"
 #! END_WB_HEADER
 #! END_HEADER
 
-LOG_FILENAME "$(FME_MF_DIR)CallGeocoder2.log"
-LOG_APPEND NO
+LOG_FILENAME "$(FME_MF_DIR)CallGeocoder_2.log"
+LOG_APPEND YES
 LOG_TIMINGS YES
+FME_DEBUG MAPPING_FILE BADNEWS FME_STACK_TRACE UNGROUPED UNCORRELATED DUMP_SCHEMA XSD_VERBOSE HTTP_DEBUG FTP_DEBUG
 LOG_FILTER_MASK -1
 LOG_MAX_FEATURES 200
 LOG_MAX_RECORDED_FEATURES 200
@@ -1425,7 +1438,7 @@ MULTI_READER_CONTINUE_ON_READER_FAILURE No
 
 # -------------------------------------------------------------------------
 
-MACRO WORKSPACE_NAME CallGeocoder2
+MACRO WORKSPACE_NAME CallGeocoder_2
 MACRO FME_VIEWER_APP fmedatainspector
 # -------------------------------------------------------------------------
 

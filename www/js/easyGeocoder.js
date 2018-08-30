@@ -2,7 +2,7 @@ $(document).ready(function() {
     $.getJSON("http://demos.fmeserver.com.s3.amazonaws.com/server-demo-config.json", function(config) {
         initialize(config.initObject);
    });
-
+});
 function initialize(initObject) {
     document.getElementById('dropdowns').style.display = 'none';
     document.getElementById('mapPage').style.display = 'none';
@@ -13,7 +13,6 @@ function initialize(initObject) {
         headers : {'Authorization' : 'fmetoken token=' + initObject.token},
         dropzone : $('#dropzone'),
         autoUpload : true,
-        
 
         add: function (e, data) {
             data.submit();
@@ -27,7 +26,6 @@ function initialize(initObject) {
                 fileName = file.name
             });
             var filePath = data.result.serviceResponse.files.folder[0].path + '/' + fileName;
-
             geocoder.requestSchema(filePath);
         },
 
@@ -80,7 +78,7 @@ var geocoder = (function() {
 
     //private
     var schemaWorkspace = 'GenerateSchemaElements.fmw';
-    var geocodeWorkspace = 'CallGeocoder.fmw';
+    var geocodeWorkspace = 'CallGeocoder_2.fmw';
     var repository = 'EasyGeocoder';
     var host;
     var token;
@@ -149,7 +147,6 @@ var geocoder = (function() {
         L.mapbox.accessToken = 'pk.eyJ1IjoibmF0aGFuYXRzYWZlIiwiYSI6ImNqazRqN2VuazA0dHczcXAyYjkyeTczcnUifQ.ZcD7wuTSCbsLRb_Y-drHjg';
 
         map = L.mapbox.map('mapDiv', 'mapbox.streets').setView([40,-105],4);
-        
         map.once("ready", function() {
             map.invalidateSize();
             document.getElementById( "mapDiv" ).appendChild( loading )
@@ -183,7 +180,6 @@ var geocoder = (function() {
             var params = 'SourceDataset_SCHEMA=' + filePath;
             var url = host + '/fmedatastreaming/' + repository + '/' + schemaWorkspace + '?' + params;
             FMEServer.customRequest(url, 'GET' ,displayNextStep);
-            console.log(url)
         },
         // Reset button function
         backToUpload : function() {
@@ -199,7 +195,6 @@ var geocoder = (function() {
         displayMap : function() {
             var params = getParams();
             var url = host + '/fmedatastreaming/' + repository + '/'+ geocodeWorkspace + '?' + params + '&token=' + token;
-            console.log(url);
             initMap();
 
             loading.style.display = 'block';
@@ -213,4 +208,4 @@ var geocoder = (function() {
             document.getElementById('mapPage').style.display = 'block';
         }
     };
-}());
+ }());
