@@ -267,8 +267,8 @@ var FMEServer = ( function() {
             /**
              * Converts server host to URL
              */
-            if (getConfig('server').substring(0, 4) != 'http') {
-                getConfig().server = 'http://' + getConfig('server');
+            if (getConfig('server').substring(0, 4) != 'https') {
+                getConfig().server = 'https://' + getConfig('server');
             }
 
             /**
