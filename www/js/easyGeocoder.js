@@ -1,5 +1,9 @@
+if (location.protocol != 'https:')  {
+    location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+}
+
 $(document).ready(function() {
-    $.getJSON("http://demos.fmeserver.com.s3.amazonaws.com/server-demo-config.json", function(config) {
+    $.getJSON("https://demos.fmeserver.com/server-demo-config.json", function(config) {
         initialize(config.initObject);
    });
 });
